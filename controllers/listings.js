@@ -4,8 +4,16 @@ const Listing =require("../models/listing");
 //this is for geocoding
 //require the service
 const mbxgeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
-const mapToken =process.env.MAP_TOKEN;
-const geocodingClient = mbxgeocoding({ accessToken: mapToken });
+const mapToken = process.env.MAP_TOKEN;
+
+if (!mapToken) {
+  throw new Error("MAP_TOKEN is missing. Set it in environment variables.");
+}
+
+const geocodingClient = mbxgeocoding({
+  accessToken: mapToken,
+});
+
 
 module.exports.index=async (req,res)=>{
     let allListings = await Listing.find({});
