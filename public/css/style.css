@@ -110,13 +110,12 @@ Edit Page */
 
 /* Show Page */
 .show-image{
-    height: 30vh !important;
-  
-    /* border-radius: 1rem !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 400px; /* adjust as needed */
+    object-fit: cover !important; /* crop while preserving aspect */
+    border-radius: 1rem !important;
     display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 2rem; */
 }
 .show-page{
     display: flex;
@@ -159,3 +158,10 @@ Edit Page */
     margin: 2rem 0;
     justify-content: center;
 }
+
+/* MAP STYLING */
+#map{
+   height:400px;
+   width:80vh;
+}
+

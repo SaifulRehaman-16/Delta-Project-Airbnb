@@ -40,6 +40,14 @@ module.exports.isOwner = async (req, res, next) => {
 
 //Server  side validation of Schema using Joi
 module.exports.validateListing = (req, res, next) => {
+    // If multer parsed a file, attach its info to req.body.listing so Joi validation sees an image object
+    if (req.file) {
+        if (!req.body.listing) req.body.listing = {};
+        req.body.listing.image = {
+            url: req.file.path || req.file.location || "",
+            filename: req.file.filename || ""
+        };
+    }
     const { error } = listingSchema.validate(req.body); 
     if (error) {
         const errMsg = error.details.map(el => el.message).join(','); 

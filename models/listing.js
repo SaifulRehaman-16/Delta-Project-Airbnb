@@ -3,17 +3,14 @@ const Schema =mongoose.Schema;
 const Review = require('./reviews.js');
 const User= require("./user.js");
 // defining &create schema
+//blueprint
 const listingSchema = new Schema({
     title: String,
     description: String,
     price: Number,
     image: {
-      filename: String,
-  
-      url: {
-        type: String,
-        default: "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg?cs=srgb&dl=pexels-asadphoto-3155666.jpg&fm=jpg"
-      }
+      url:String,
+      filename:String,
     },
     location: String,
     country: String,
@@ -27,7 +24,19 @@ const listingSchema = new Schema({
     owner:{
       type:Schema.Types.ObjectId,
       ref:"User",
+    },
+   geometry:{
+    type: {
+      type: String, // Don't do `{ location: { type: String } }`
+      enum: ['Point'], // 'location.type' must be 'Point'
+      required: true
+    },
+    coordinates: {
+      type: [Number],
+      required: true
     }
+  }
+
 
   });
   

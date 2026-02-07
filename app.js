@@ -1,3 +1,10 @@
+// we do not pass env variables when deploying the website.
+if(process.env.NODE_ENV !="production"){
+    require("dotenv").config();
+}
+
+
+// console.log(process.env.SECRET);
 //1. Import express and mongoose and create an app
 const express=require('express');
 const app=express();
@@ -7,9 +14,12 @@ const methodOverride=require('method-override');
 const ejsMate =require("ejs-mate");
 const ExpressError =require("./utils/ExpressError.js")
 const session=require("express-session");
+const {MongoStore} = require("connect-mongo");
+
+
 const flash=require("connect-flash");
-const passport= require("passport");
-const Localstratagy= require("passport-local");
+const passport= require("passport");  //Authentication middleWrae
+const Localstratagy= require("passport-local"); //if we want flash in templetes then we use this
 const User=require("./models/user.js");
 
 const listingRouter=require("./Routes/listing.js");
@@ -29,19 +39,69 @@ app.engine("ejs", ejsMate);
 
 
 app.use(express.static(path.join(__dirname,'public')));
-app.listen(8080,()=>{
-console.log("server started at 8080");
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+//3. Connecting to mongoDb
+// const MONGO_URL = process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl=process.env.ATLASDB_URL;
+async function main(){
+    await mongoose.connect(dbUrl);
+}
+main()
+.then(()=>{
+    console.log("DB connection successful");
+})
+.catch((err)=>{
+    console.log("DB connection failed",err);
+});
+
+
+// const session = require("express-session");
+// const MongoStore = require("connect-mongo");
+
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto: {
+      secret: process.env.SESSION_SECRET,
+    },
+    touchAfter: 24 * 3600,
+  });
+
+  app.use(
+    session({
+      store,
+      secret: process.env.SESSION_SECRET,
+      resave: false,
+      saveUninitialized: true,
+      cookie: {
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      },
+    })
+  );
+  
+
+
+store.on("error", (err) => {
+    console.log("Error in Mongo Session Store", err);
 });
 
 const sessionOptions = {
-    secret: "superSecretCode",
+    store,
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: {
+        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
         httpOnly: true
-    }
+    },
 }
+
 app.use(session(sessionOptions));
 app.use(flash());
 app.use(passport.initialize());
@@ -75,18 +135,6 @@ app.get('/',(req,res)=>{
 });
 
 
-//3. Connecting to mongoDb
-const MONGO_URL = process.env.MONGODB_URL || "mongodb://127.0.0.1:27017/wanderlust";
-async function main(){
-    await mongoose.connect(MONGO_URL);
-}
-main()
-.then(()=>{
-    console.log("DB connection successful");
-})
-.catch((err)=>{
-    console.log("DB connection failed",err);
-});
 
 
 
